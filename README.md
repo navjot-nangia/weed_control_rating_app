@@ -1,6 +1,10 @@
 # PlotCover — weed control rating PWA
 
-Phone-first, no-login, on-device RGB photo analysis for weed plots. Capture or upload photos, select a rectangular region, exclude rectangular crop areas, review a normalized ExG mask, save measurements in IndexedDB, and export CSV. Separate trials, fixed thresholds within trials, multiple reference photos, replicate metadata, and per-plot means are supported. No photo uploads or external services.
+Phone-first, no-login, on-device RGB photo analysis for weed plots. Guided flow: Start → Choose trial → Reference photo → Review → Plot photo → Review → Result. Optional metadata and advanced settings are collapsed. Existing saved trials and photos are retained. Capture or upload photos, select a rectangular region, exclude rectangular crop areas, review a normalized ExG mask, save measurements in IndexedDB, and export CSV. Separate trials, fixed thresholds within trials, multiple reference photos, replicate metadata, and per-plot means are supported. No photo uploads or external services.
+
+## GitHub Pages
+
+The Pages workflow runs tests, builds the static app, and deploys dist on each main push. Enable GitHub Actions as the Pages source in repository settings. All app assets use relative paths to support the repository subpath.
 
 ## Run and deploy
 
