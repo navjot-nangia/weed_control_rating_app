@@ -1,27 +1,50 @@
-# PlotCover — weed control rating PWA
+# PlotCover
 
-Phone-first, no-login, on-device RGB photo analysis for weed plots. Guided flow: Start → Choose trial → Reference photo → Review → Plot photo → Review → Result. Optional metadata and advanced settings are collapsed. Existing saved trials and photos are retained. Capture or upload photos, select a rectangular region, exclude rectangular crop areas, review a normalized ExG mask, save measurements in IndexedDB, and export CSV. Separate trials, fixed thresholds within trials, multiple reference photos, replicate metadata, and per-plot means are supported. No photo uploads or external services.
+An offline-capable PWA for setting up agricultural studies and rating visible weed cover from RGB photos. No login, photo uploads, or cloud account required. Data stays in IndexedDB on the current device; this is not yet a shared multi-user platform.
 
-## GitHub Pages
+## Study workflow
 
-The Pages workflow runs tests, builds the static app, and deploys dist on each main push. Enable GitHub Actions as the Pages source in repository settings. All app assets use relative paths to support the repository subpath.
+1. Study name, objective and crop.
+2. Treatment codes, names, reference types, herbicide, actual rate, units and label-rate multiplier.
+3. Spray applications and dates.
+4. Blocks/replicates, generated plot numbers, manual treatment assignments and randomization notes.
+5. Rating timings linked to an application and day offset.
+6. Review and save.
+
+Plot generation creates one plot per treatment per block in treatment order. It does **not** randomize treatments. For 10 treatments, a first plot of 101 and block spacing of 100 generate 101–110, 201–210, etc. Users can change assignments, edit numbers, add plots or remove plots. Spray applications are separate from blocks.
+
+Open a study, select a rating timing, and select a plot. Capture/upload a photo, inspect its green mask, select a rectangular area or exclude crop rectangles, optionally enter a manual visual control rating and notes, then save and continue to the next unrated plot. Multiple photos per plot and timing are supported. Saved photos can be viewed or deleted from that plot's history.
+
+Study setup can be edited. Once ratings exist, their plot assignments, blocks, timing application/offsets, reference types and analysis threshold cannot be changed. Add new plots/timings for new events. Labels and missing application dates can be corrected.
+
+## Measurement
+
+Normalized ExG = (2G − R − B)/(R + G + B). Black pixels receive zero. Pixels strictly above the study threshold are counted as green. The default 0.10 is exploratory and requires checking representative masks. Images are resized to a maximum edge of 1200 pixels. Excluded areas are removed from the denominator.
+
+Reference comparisons are isolated by **study, rating timing and block**. Multiple photos are averaged per reference plot, then reference plots are weighted equally.
+
+- Untreated only: control = 100 × (1 − treatment cover / untreated cover).
+- Both references: control = 100 × (untreated cover − treatment cover)/(untreated cover − weed-free cover).
+- Weed-free only: green cover is reported; percentage control requires an untreated reference.
+
+Reference span ≤0.1 percentage point is rejected. Displayed control is clamped to 0–100%; CSV also includes unclamped per-photo control, plot mean cover/control, manual ratings, references, plot assignment, application/timing metadata, exclusions and randomization notes. Treatment ratings update when reference measurements are added/deleted.
+
+ExG also detects green crops. Exclude crop plants in every photo. Use comparable ground area, height, lighting, crop stage and date. Occluded, yellow or dead weeds and shadows can bias estimates. These are experimental **visible green-cover reduction estimates**, not validated visual weed-control or herbicide-injury ratings. Validate against manual masks and field ratings before research use.
+
+## Storage and compatibility
+
+The existing `plotcover-v1` IndexedDB is upgraded to version 2, retaining the original `trials` and `photos` stores. New studies and ratings use separate stores. Earlier measurements can be exported from the home page's Data section; they are not automatically assigned to a study or rating timing.
+
+Download backup exports studies, ratings, photos and earlier records as JSON. Restore merges this backup into local storage; matching IDs are replaced after confirmation. CSV exports omit photo bytes. Clearing browser data removes local records; browsers may evict storage. No automatic sync between people/devices is implemented.
+
+The application shell and local analysis work offline after a successful online load. All assets use relative URLs for GitHub Pages subpaths. Page entry transitions slide from right to left over 0.8 seconds; reduced-motion preferences disable animation.
 
 ## Run and deploy
 
-Node.js 22+: `npm start` (port 3000 or Railway's PORT). No runtime dependencies or build step. Connect this repository to Railway and use `npm start`; railway.json includes a health check. Deployment must use HTTPS for PWA installation and offline support. `npm run build` copies the static app to dist for an optional static host. `npm test` verifies analysis and HTTP serving.
+Node.js 22+: `npm start` (port 3000 or PORT). No dependencies or installation step required. `npm test` checks analysis, reference isolation, plot generation, dates, validation and the HTTP server. `npm run build` copies the static app into dist.
 
-On iPhone, open the HTTPS URL in Safari → Share → Add to Home Screen. On Android, use Install app. After the first online load and service-worker installation, the shell and local photo processing work offline. Browser storage is device-specific and may be evicted; clearing it removes records. CSV does not include photos. Originals are not retained: saved JPEGs have a maximum edge of 1200 pixels.
+GitHub Pages: the workflow tests/builds/deploys dist on pushes to main. Repository Settings → Pages → Source must be GitHub Actions. Railway: connect this repository; `railway.json` starts `npm start` with a health check.
 
-## Measurement protocol
+PWA installation requires HTTPS. On iPhone: Safari → Share → Add to Home Screen. On Android: browser → Install app.
 
-Photograph comparable ground areas, top down, at consistent height, orientation, lighting, crop stage, and date. Choose a fixed threshold after checking representative masks. The initial 0.10 threshold is exploratory and requires field validation. Exclude crop plants on **every** photo, including references, or select an inter-row area. Confirm that the measured region is weed-only before saving. Excluded pixels are removed from the denominator. Inter-row cover is not whole-plot cover and ignores weeds hidden by cotton. Brown or yellow weeds and shadows can bias estimates. ExG does not identify weed species, distinguish cotton from weeds, or measure herbicide injury.
-
-Normalized ExG = (2G − R − B)/(R + G + B); black pixels receive zero. Green cover is the fraction of included pixels with ExG strictly above the trial threshold. Reference cover is the arithmetic mean of reference-photo cover percentages. Repeated treatment photos are averaged by plot ID, treatment, and replicate. Settings are fixed per trial; create another trial for a different threshold.
-
-* Untreated reference only: 100 × (1 − treatment cover / untreated cover).
-* Untreated and weed-free references: 100 × (untreated cover − treatment cover)/(untreated cover − weed-free cover).
-* Weed-free reference only: cover and excess cover in percentage points; control is unavailable.
-
-A reference span ≤0.1 percentage point is rejected. UI ratings are clamped to 0–100%; CSV also retains the unclamped result. References added or deleted update ratings, while stored cover measurements remain unchanged. These are experimental **visible green-cover reduction estimates**, not validated visual weed-control or herbicide-efficacy ratings. Validate against manual weed masks and field ratings before research use.
-
-References: Woebbecke et al. (1995), Color indices for weed identification under various soil, residue, and lighting conditions, https://doi.org/10.13031/2013.27838. PWA documentation: https://web.dev/learn/pwa/.
+Reference: Woebbecke et al. (1995), Color indices for weed identification under various soil, residue, and lighting conditions, https://doi.org/10.13031/2013.27838.
