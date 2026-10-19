@@ -1,0 +1,2 @@
+export function captureInstructions(study){return (study.layout==='fallow'||(!study.layout&&/^(fallow|none|no crop)$/i.test(study.crop?.trim()||'')))?'Align the plot center with the dotted line. Avoid the first/last 2 ft and plot sides.':'Align the plot center with the dotted line. Frame the middle two rows; avoid the first/last 2 ft and plot sides.';}
+export function baselineMode(study){return ['weedy','clean','both'].includes(study.baselineMode)?study.baselineMode:'both';}

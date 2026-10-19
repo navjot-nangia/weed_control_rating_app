@@ -4,7 +4,7 @@ An offline-capable PWA for setting up agricultural studies and rating visible we
 
 ## Study workflow
 
-1. Study name, objective and crop.
+1. Study name, objective, crop rows or fallow, and baseline availability (weedy, weed-free or both).
 2. Treatment codes, names, reference types, herbicide, actual rate and selectable units. Presets include fluid oz/US gal, mL/L, area-based rates and percent concentrations; Other accepts custom units. Older label-rate metadata is retained but the setup field has been removed.
 3. Spray applications and dates.
 4. Blocks/replicates, generated plot numbers, manual treatment assignments and randomization notes.
@@ -13,7 +13,7 @@ An offline-capable PWA for setting up agricultural studies and rating visible we
 
 Plot generation creates one plot per treatment per block in treatment order. It does **not** randomize treatments. For 10 treatments, a first plot of 101 and block spacing of 100 generate 101–110, 201–210, etc. Users can change assignments, edit numbers, add plots or remove plots. Spray applications are separate from blocks.
 
-Open a study, select a rating timing, and select a plot. Capture/upload a photo, inspect its green mask, select a rectangular area, exclude crop rectangles, move/resize boxes using Edit box, zoom from 100–400%, pan with Move view, or paint additional exclusions with Brush (Erase brush removes only brush marks), optionally enter a manual visual control rating and notes, then save and continue to the next unrated plot. Multiple photos per plot and timing are supported. Saved photos can be viewed or deleted from that plot's history.
+Open a study, select a rating timing, and select a plot. Take photo opens an in-app rear-camera preview with one dotted vertical center line for both crop rows and fallow. For row crops, frame the middle two rows; for all plots, avoid the first/last 2 ft and plot sides. The guide is visual: it does not measure physical distances, detect rows, or automatically crop boundaries. Maintain comparable oblique camera angle, distance and ground area. Camera guide pixels are never included in the saved image or analysis. Camera tracks stop when leaving the preview or hiding the app. A native Phone camera fallback and Upload remain available; the native camera cannot show the in-app overlay. Capture/upload a photo, inspect its green mask, select a rectangular area, exclude crop rectangles, move/resize boxes using Edit box, zoom from 100–400%, pan with Move view, or paint additional exclusions with Brush (Erase brush removes only brush marks), optionally enter a manual visual control rating and notes, then save and continue to the next unrated plot. Multiple photos per plot and timing are supported. Saved photos can be viewed or deleted from that plot's history.
 
 Study setup can be edited. Once ratings exist, their plot assignments, blocks, timing application/offsets, reference types and analysis threshold cannot be changed. Add new plots/timings for new events. Labels and missing application dates can be corrected.
 
@@ -21,11 +21,11 @@ Study setup can be edited. Once ratings exist, their plot assignments, blocks, t
 
 Normalized ExG = (2G − R − B)/(R + G + B). Black pixels receive zero. Pixels strictly above the study threshold are counted as green. The default 0.10 is exploratory and requires checking representative masks. Images are resized to a maximum edge of 1200 pixels. Excluded areas are removed from the denominator. Rectangle and brush overlaps are counted once. Brush masks are saved as lossless run-length pairs in brushRuns, included in JSON backups and CSV. Up to 25 editor operations can be undone.
 
-Reference comparisons are isolated by **study, rating timing and block**. Multiple photos are averaged per reference plot, then reference plots are weighted equally.
+Only the selected baseline types are used; older studies default to both. Reference comparisons are isolated by **study, rating timing and block**. Multiple photos are averaged per reference plot, then reference plots are weighted equally.
 
 - Untreated only: control = 100 × (1 − treatment cover / untreated cover).
 - Both references: control = 100 × (untreated cover − treatment cover)/(untreated cover − weed-free cover).
-- Weed-free only: green cover is reported; percentage control requires an untreated reference.
+- Weed-free only: cover difference in percentage points is reported; percentage control requires an untreated reference.
 
 Reference span ≤0.1 percentage point is rejected. Displayed control is clamped to 0–100%; CSV also includes unclamped per-photo control, plot mean cover/control, manual ratings, references, plot assignment, application/timing metadata, exclusions and randomization notes. Treatment ratings update when reference measurements are added/deleted.
 

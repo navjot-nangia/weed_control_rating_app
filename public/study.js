@@ -1,4 +1,5 @@
 import {mean,rate} from './analysis.js';
+import {baselineMode} from './capture.js';
 export function generatePlots(treatments,blocks=3,start=101,stride=100){
  if(!Number.isInteger(blocks)||blocks<1||blocks>50)throw new Error('Use 1–50 blocks.');
  if(!Number.isInteger(start)||start<1||!Number.isInteger(stride)||stride<treatments.length)throw new Error('Check the starting number and block spacing.');
@@ -22,6 +23,6 @@ export function referencesFor(study,records,timingId,block){
  const inSession=records.filter(r=>r.studyId===study.id&&r.timingId===timingId&&r.block===block&&Number.isFinite(r.cover));
  // Average repeat photos per reference plot first, so one plot cannot dominate by photo count.
  function reference(role){const byPlot=new Map();for(const r of inSession.filter(r=>r.role===role)){if(!byPlot.has(r.plotId))byPlot.set(r.plotId,[]);byPlot.get(r.plotId).push(r);}return mean([...byPlot.values()].map(list=>({cover:mean(list)})));}
- return {untreated:reference('untreated'),clean:reference('clean')};
+ const mode=baselineMode(study);return {untreated:mode==='clean'?null:reference('untreated'),clean:mode==='weedy'?null:reference('clean')};
 }
 export function plotResult(study,records,timingId,plot){const list=records.filter(r=>r.studyId===study.id&&r.timingId===timingId&&r.plotId===plot.id);const cover=mean(list.filter(r=>Number.isFinite(r.cover)));const refs=referencesFor(study,records,timingId,plot.block);const treatment=study.treatments.find(t=>t.id===plot.treatmentId);const control=treatment?.role==='treatment'&&cover!==null?rate(cover,refs.untreated,refs.clean):{control:null,raw:null};return {cover,...control,...refs,count:list.length,manual:mean(list.filter(r=>Number.isFinite(r.manual)).map(r=>({cover:r.manual})))};}
