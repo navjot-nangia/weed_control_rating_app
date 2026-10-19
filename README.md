@@ -5,7 +5,7 @@ An offline-capable PWA for setting up agricultural studies and rating visible we
 ## Study workflow
 
 1. Study name, objective and crop.
-2. Treatment codes, names, reference types, herbicide, actual rate, units and label-rate multiplier.
+2. Treatment codes, names, reference types, herbicide, actual rate and selectable units. Presets include fluid oz/US gal, mL/L, area-based rates and percent concentrations; Other accepts custom units. Older label-rate metadata is retained but the setup field has been removed.
 3. Spray applications and dates.
 4. Blocks/replicates, generated plot numbers, manual treatment assignments and randomization notes.
 5. Rating timings linked to an application and day offset.
@@ -13,13 +13,13 @@ An offline-capable PWA for setting up agricultural studies and rating visible we
 
 Plot generation creates one plot per treatment per block in treatment order. It does **not** randomize treatments. For 10 treatments, a first plot of 101 and block spacing of 100 generate 101–110, 201–210, etc. Users can change assignments, edit numbers, add plots or remove plots. Spray applications are separate from blocks.
 
-Open a study, select a rating timing, and select a plot. Capture/upload a photo, inspect its green mask, select a rectangular area or exclude crop rectangles, optionally enter a manual visual control rating and notes, then save and continue to the next unrated plot. Multiple photos per plot and timing are supported. Saved photos can be viewed or deleted from that plot's history.
+Open a study, select a rating timing, and select a plot. Capture/upload a photo, inspect its green mask, select a rectangular area, exclude crop rectangles, move/resize boxes using Edit box, zoom from 100–400%, pan with Move view, or paint additional exclusions with Brush (Erase brush removes only brush marks), optionally enter a manual visual control rating and notes, then save and continue to the next unrated plot. Multiple photos per plot and timing are supported. Saved photos can be viewed or deleted from that plot's history.
 
 Study setup can be edited. Once ratings exist, their plot assignments, blocks, timing application/offsets, reference types and analysis threshold cannot be changed. Add new plots/timings for new events. Labels and missing application dates can be corrected.
 
 ## Measurement
 
-Normalized ExG = (2G − R − B)/(R + G + B). Black pixels receive zero. Pixels strictly above the study threshold are counted as green. The default 0.10 is exploratory and requires checking representative masks. Images are resized to a maximum edge of 1200 pixels. Excluded areas are removed from the denominator.
+Normalized ExG = (2G − R − B)/(R + G + B). Black pixels receive zero. Pixels strictly above the study threshold are counted as green. The default 0.10 is exploratory and requires checking representative masks. Images are resized to a maximum edge of 1200 pixels. Excluded areas are removed from the denominator. Rectangle and brush overlaps are counted once. Brush masks are saved as lossless run-length pairs in brushRuns, included in JSON backups and CSV. Up to 25 editor operations can be undone.
 
 Reference comparisons are isolated by **study, rating timing and block**. Multiple photos are averaged per reference plot, then reference plots are weighted equally.
 
