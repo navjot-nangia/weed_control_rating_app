@@ -1,4 +1,4 @@
-import {previewPixels} from './analysis.js';
+import {previewPixels} from './analysis.js?v=9';
 export const clamp=(v,min=0,max=1)=>Math.max(min,Math.min(max,v));
 export function rectangle(a,b){return {x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(a.x-b.x),h:Math.abs(a.y-b.y)};}
 export function moveRectangle(r,dx,dy){return {...r,x:clamp(r.x+dx,0,1-r.w),y:clamp(r.y+dy,0,1-r.h)};}

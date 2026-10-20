@@ -1,7 +1,7 @@
-import {analyze,csvCell,rate} from './analysis.js';
-import {PhotoEditor,encodeMask} from './editor.js';
-import {captureInstructions,baselineMode} from './capture.js';
-import {generatePlots,timingDate,validateStudy,plotResult,referencesFor} from './study.js';
+import {analyze,csvCell,rate} from './analysis.js?v=9';
+import {PhotoEditor,encodeMask} from './editor.js?v=9';
+import {captureInstructions,baselineMode} from './capture.js?v=9';
+import {generatePlots,timingDate,validateStudy,plotResult,referencesFor} from './study.js?v=9';
 const $=id=>document.getElementById(id),app=$('app'),uid=()=>crypto.randomUUID();
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let db,studies=[],ratings=[],study=null,timingId='',draft=null,wizard=0,screen='home',photo=null,plotId='',busy=false,lastRating=null,editor=null,liveStream=null,cameraToken=0;
@@ -81,4 +81,4 @@ $('home-button').onclick=()=>{if(leave())studyHome();};
 window.addEventListener('pagehide',stopCamera);
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&liveStream){stopCamera();if(screen==='camera')capturePage();}});
 function connection(){$('offline').hidden=navigator.onLine;}window.addEventListener('online',connection);window.addEventListener('offline',connection);connection();
-async function init(){try{db=await new Promise((resolve,reject)=>{const req=indexedDB.open('plotcover-v1',2);req.onupgradeneeded=()=>{for(const name of ['trials','photos','studies','ratings'])if(!req.result.objectStoreNames.contains(name))req.result.createObjectStore(name,{keyPath:'id'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);req.onblocked=()=>reject(new Error('Close other PlotCover tabs, then reload.'));});db.onversionchange=()=>db.close();await refresh();studyHome();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>message('Reload online to enable offline use.'));}catch(err){message(err.message||'Enable browser storage and reload.');}}init();
+async function init(){try{db=await new Promise((resolve,reject)=>{const req=indexedDB.open('plotcover-v1',2);req.onupgradeneeded=()=>{for(const name of ['trials','photos','studies','ratings'])if(!req.result.objectStoreNames.contains(name))req.result.createObjectStore(name,{keyPath:'id'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);req.onblocked=()=>reject(new Error('Close other PlotCover tabs, then reload.'));});db.onversionchange=()=>db.close();await refresh();studyHome();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>message('Reload online to enable offline use.'));}catch(err){message(err.message||'Enable browser storage and reload.');}}init();

@@ -1,5 +1,5 @@
-import {mean,rate} from './analysis.js';
-import {baselineMode} from './capture.js';
+import {mean,rate} from './analysis.js?v=9';
+import {baselineMode} from './capture.js?v=9';
 export function generatePlots(treatments,blocks=3,start=101,stride=100){
  if(!Number.isInteger(blocks)||blocks<1||blocks>50)throw new Error('Use 1–50 blocks.');
  if(!Number.isInteger(start)||start<1||!Number.isInteger(stride)||stride<treatments.length)throw new Error('Check the starting number and block spacing.');
