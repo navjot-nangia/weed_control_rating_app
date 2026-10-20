@@ -15,7 +15,7 @@ test('editor pointer flow supports box edit, brush, zoom, pan and undo without c
  globalThis.document={createElement:()=>({getContext:()=>context})};globalThis.ResizeObserver=class{observe(){}disconnect(){}};globalThis.requestAnimationFrame=()=>1;globalThis.cancelAnimationFrame=()=>{};
  try{
  const photo={data:{width:100,height:100,data:new Uint8ClampedArray(40000)},roi:null,exclusions:[]};
- const editor=new PhotoEditor(canvas,viewport,photo,.1,()=>{},()=>{});
+ let changes=0,measures=0;const editor=new PhotoEditor(canvas,viewport,photo,.1,()=>{changes++;},()=>{measures++;});editor.setThreshold(.22);assert.equal(editor.threshold,.22);assert.equal(photo.threshold,.22);assert.ok(changes>0&&measures>1);
  const event=(x,y)=>({clientX:x,clientY:y,pointerId:1,button:0,preventDefault(){}});
  editor.down(event(10,10));editor.up(event(40,40));assert.equal(photo.exclusions.length,1);assert.equal(photo.exclusions[0].x,.1);
  editor.setTool('edit');editor.down(event(25,25));editor.up(event(35,35));assert.ok(Math.abs(photo.exclusions[0].x-.2)<1e-9);
