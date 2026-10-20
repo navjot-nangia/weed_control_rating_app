@@ -15,7 +15,7 @@ test('editor pointer flow supports box edit, brush, zoom, pan and undo without c
  globalThis.document={createElement:()=>({getContext:()=>context})};globalThis.ResizeObserver=class{observe(){}disconnect(){}};globalThis.requestAnimationFrame=()=>1;globalThis.cancelAnimationFrame=()=>{};
  try{
  const photo={data:{width:100,height:100,data:new Uint8ClampedArray(40000)},roi:null,exclusions:[]};
- let changes=0,measures=0;const editor=new PhotoEditor(canvas,viewport,photo,.1,()=>{changes++;},()=>{measures++;});editor.setThreshold(.22);assert.equal(editor.threshold,.22);assert.equal(photo.threshold,.22);assert.ok(changes>0&&measures>1);
+ let changes=0,measures=0;const editor=new PhotoEditor(canvas,viewport,photo,.1,()=>{changes++;},()=>{measures++;});assert.equal(editor.tool,'pan');editor.setTool('exclude');editor.setThreshold(.22);assert.equal(editor.threshold,.22);assert.equal(photo.threshold,.22);assert.ok(changes>0&&measures>1);
  const event=(x,y)=>({clientX:x,clientY:y,pointerId:1,button:0,preventDefault(){}});
  editor.down(event(10,10));editor.up(event(40,40));assert.equal(photo.exclusions.length,1);assert.equal(photo.exclusions[0].x,.1);
  editor.setTool('edit');editor.down(event(25,25));editor.up(event(35,35));assert.ok(Math.abs(photo.exclusions[0].x-.2)<1e-9);
@@ -28,13 +28,12 @@ test('editor pointer flow supports box edit, brush, zoom, pan and undo without c
  }finally{Object.assign(globalThis,originals);}
 });
 
-test('mask view paints white background with red hits and photo toggle restores original',()=>{
+test('editor draws opaque binary image directly and can switch to overlay and photo',()=>{
  const old={document:globalThis.document,ResizeObserver:globalThis.ResizeObserver,ImageData:globalThis.ImageData};
- let whiteFills=0,originalDraws=0;
- const layerCtx={putImageData(){},createImageData(w,h){return {data:new Uint8ClampedArray(w*h*4)}}};
- const frontCtx={fillStyle:'',fillRect(){if(this.fillStyle==='#fff')whiteFills++;},putImageData(){originalDraws++;},drawImage(){},strokeRect(){},beginPath(){},rect(){},fill(){}};
+ const frames=[];const layerCtx={putImageData(){},createImageData(w,h){return {data:new Uint8ClampedArray(w*h*4)}}};
+ const frontCtx={fillRect(){},putImageData(image){frames.push(Array.from(image.data))},drawImage(){},strokeRect(){},beginPath(){},rect(){},fill(){}};
  const canvas={width:2,height:1,style:{},getContext:()=>frontCtx,get offsetWidth(){return parseFloat(this.style.width)||100},get offsetHeight(){return this.offsetWidth},getBoundingClientRect(){return {width:this.offsetWidth,height:this.offsetHeight}}};
  const viewport={clientWidth:100,clientHeight:100,scrollLeft:0,scrollTop:0};
  globalThis.document={createElement:()=>({getContext:()=>layerCtx})};globalThis.ResizeObserver=class{observe(){}disconnect(){}};globalThis.ImageData=class{constructor(data,width,height){Object.assign(this,{data,width,height})}};
- try{const photo={data:{width:2,height:1,data:new Uint8ClampedArray([0,255,0,255,120,100,100,255])},roi:null,exclusions:[]};const editor=new PhotoEditor(canvas,viewport,photo,.1,()=>{},()=>{photo.result=analyze(photo.data.data,2,1,.1)});assert.equal(photo.result.cover,50);assert.deepEqual(Array.from(photo.result.mask.slice(0,4)),[226,24,48,255]);assert.ok(whiteFills>0);assert.equal(originalDraws,0);editor.overlay=false;editor.draw();assert.equal(originalDraws,1);editor.destroy();}finally{Object.assign(globalThis,old)}
+ try{const photo={data:{width:2,height:1,data:new Uint8ClampedArray([0,255,0,255,120,100,100,255])},roi:null,exclusions:[]};const editor=new PhotoEditor(canvas,viewport,photo,.1,()=>{},()=>{photo.result=analyze(photo.data.data,2,1,.1)});assert.equal(photo.result.cover,50);assert.deepEqual(frames.at(-1),[255,255,255,255,0,0,0,255]);editor.setView('overlay');assert.deepEqual(frames.at(-1).slice(4),[120,100,100,255]);editor.setView('photo');assert.deepEqual(frames.at(-1),Array.from(photo.data.data));editor.destroy();}finally{Object.assign(globalThis,old)}
 });
