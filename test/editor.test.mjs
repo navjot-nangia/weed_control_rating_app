@@ -27,3 +27,14 @@ test('editor pointer flow supports box edit, brush, zoom, pan and undo without c
  editor.undo();assert.equal(photo.brush.some(Boolean),false);assert.equal(photo.exclusions.length,1);editor.destroy();
  }finally{Object.assign(globalThis,originals);}
 });
+
+test('mask view paints white background with red hits and photo toggle restores original',()=>{
+ const old={document:globalThis.document,ResizeObserver:globalThis.ResizeObserver,ImageData:globalThis.ImageData};
+ let whiteFills=0,originalDraws=0;
+ const layerCtx={putImageData(){},createImageData(w,h){return {data:new Uint8ClampedArray(w*h*4)}}};
+ const frontCtx={fillStyle:'',fillRect(){if(this.fillStyle==='#fff')whiteFills++;},putImageData(){originalDraws++;},drawImage(){},strokeRect(){},beginPath(){},rect(){},fill(){}};
+ const canvas={width:2,height:1,style:{},getContext:()=>frontCtx,get offsetWidth(){return parseFloat(this.style.width)||100},get offsetHeight(){return this.offsetWidth},getBoundingClientRect(){return {width:this.offsetWidth,height:this.offsetHeight}}};
+ const viewport={clientWidth:100,clientHeight:100,scrollLeft:0,scrollTop:0};
+ globalThis.document={createElement:()=>({getContext:()=>layerCtx})};globalThis.ResizeObserver=class{observe(){}disconnect(){}};globalThis.ImageData=class{constructor(data,width,height){Object.assign(this,{data,width,height})}};
+ try{const photo={data:{width:2,height:1,data:new Uint8ClampedArray([0,255,0,255,120,100,100,255])},roi:null,exclusions:[]};const editor=new PhotoEditor(canvas,viewport,photo,.1,()=>{},()=>{photo.result=analyze(photo.data.data,2,1,.1)});assert.equal(photo.result.cover,50);assert.deepEqual(Array.from(photo.result.mask.slice(0,4)),[226,24,48,255]);assert.ok(whiteFills>0);assert.equal(originalDraws,0);editor.overlay=false;editor.draw();assert.equal(originalDraws,1);editor.destroy();}finally{Object.assign(globalThis,old)}
+});
